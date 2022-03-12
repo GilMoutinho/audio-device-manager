@@ -121,8 +121,8 @@ public static class AudioDeviceManager
     /// Asynchronously changes the current default audio output device.
     /// </summary>
     /// <param name="deviceName">Name of the device to set as default</param>
-    /// <param name="deviceRole">Role of the device (optional, defaults to Console)</param>
-    public static void SetDefaultDevice(string deviceName, DeviceRole deviceRole = DeviceRole.Console)
+    /// <param name="deviceRole">Role of the device (optional, defaults to all)</param>
+    public static void SetDefaultDevice(string deviceName, DeviceRole? deviceRole = null)
     {
         string arguments;
         switch (Application.platform)
@@ -134,7 +134,8 @@ public static class AudioDeviceManager
                 string name = regexGroups[1].Value.Trim();
                 string manufactor = regexGroups[2].Value.Trim();
                 string commandLineFriendlyID = manufactor + @"\Device\" + name + @"\Render";
-                arguments = "/SetDefault \"" + commandLineFriendlyID + "\" " + (int)deviceRole;
+                string commandLineDeviceRole = deviceRole == null ? "all" : ((int)deviceRole).ToString();
+                arguments = "/SetDefault \"" + commandLineFriendlyID + "\" " + commandLineDeviceRole;
                 break;
             case RuntimePlatform.OSXPlayer:
             case RuntimePlatform.OSXEditor:

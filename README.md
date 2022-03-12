@@ -15,6 +15,6 @@ Device currentDevice = GetCurrentDevice();
 // Gets an array with all the available audio output devices. (Only works in macOS for now)
 Device[] devices = AudioDeviceManager.GetAllDevices();
 
-// Asynchronously changes the current default audio output device.
+// Asynchronously changes the current default audio output device. DeviceRole defaults to all.
 AudioDeviceManager.SetDefaultDevice("deviceName", AudioDeviceManager.DeviceRole.Console)
 ```
