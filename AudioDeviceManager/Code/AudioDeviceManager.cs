@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -7,8 +7,6 @@ using UnityEngine;
 /// </summary>
 public static class AudioDeviceManager
 {
-    private const string AudioDevicesFile = "audioDevices.txt";
-
     /// <summary>
     /// Gets the current default audio output device.
     /// </summary>
@@ -20,10 +18,7 @@ public static class AudioDeviceManager
         {
             case RuntimePlatform.WindowsPlayer:
             case RuntimePlatform.WindowsEditor:
-                // TODO: Uncomment after the method is fixed.
-                //return GetCurrentDeviceWindows(deviceRole);
-                Debug.LogError("GetCurrentDevice is not working in Windows.");
-                return null;
+                return GetCurrentDeviceWindows(deviceRole);
             case RuntimePlatform.OSXPlayer:
             case RuntimePlatform.OSXEditor:
                 return GetCurrentDeviceMacOS();
@@ -35,27 +30,28 @@ public static class AudioDeviceManager
 
     /// <summary>
     /// Gets the current default audio output device in Windows.
-    /// FIXME: This method is not working.
     /// </summary>
     /// <param name="deviceRole">Role of the device</param>
     /// <returns>The current audio output device</returns>
     private static Device GetCurrentDeviceWindows(DeviceRole deviceRole)
     {
-        const int DefaultConsoleDeviceToken = 5;
-        int defaultDeviceToken = DefaultConsoleDeviceToken + ((int)deviceRole);
-        string arguments = "/scomma " + AudioDevicesFile + " && " +
-            "for /f \"tokens=1,4," + defaultDeviceToken + " delims=,\" " +
-            "%a in ('type " + AudioDevicesFile + " ^| find \"Render\"') " +
-            "do @echo %a (%b),%c";
+        string deviceRoleColumn = deviceRole switch
+        {
+            DeviceRole.Console => "Default",
+            DeviceRole.Multimedia => "Default Multimedia",
+            DeviceRole.Communications => "Default Communications",
+            _ => "Default",
+        };
+        string arguments = "/scomma \"\" /Columns \"Name,Device Name," + deviceRoleColumn + "\"";
         Device currentDevice = null;
         AudioDeviceManagerCommands.ExecuteCommand(arguments, (output) =>
         {
             foreach (string deviceString in output)
             {
                 string[] splitDeviceString = deviceString.Split(',');
-                if (splitDeviceString[1] == "Render")
+                if (splitDeviceString[2] == "Render")
                 {
-                    currentDevice = new Device(splitDeviceString[0]);
+                    currentDevice = new Device(splitDeviceString[0], splitDeviceString[1]);
                     break;
                 }
             }
@@ -87,34 +83,58 @@ public static class AudioDeviceManager
     /// <returns>Array with the current audio output devices</returns>
     public static Device[] GetAllDevices()
     {
-        string arguments;
         switch (Application.platform)
         {
             case RuntimePlatform.WindowsPlayer:
             case RuntimePlatform.WindowsEditor:
-                // FIXME: This is not working.
-                //arguments = "/scomma " + AudioDevicesFile + " && " +
-                //    "for /f \"tokens=1,4 delims=,\" " +
-                //    "%a in ('type " + AudioDevicesFile + " ^| find \"Render\"') " +
-                //    "do @echo %a (%b)";
-                //break;
-                Debug.LogError("GetAllDevices is not working in Windows.");
-                return null;
+                return GetAllDevicesWindows();
             case RuntimePlatform.OSXPlayer:
             case RuntimePlatform.OSXEditor:
-                arguments = "-a -t output";
-                break;
+                return GetAllDevicesMacOS();
             default:
                 Debug.LogError("AudioDeviceManager is only available for Windows and macOS!");
                 return null;
         }
+    }
 
-        Device[] devices = new Device[0];
+    /// <summary>
+    /// Gets an array with all the available audio output devices in Windows.
+    /// </summary>
+    /// <returns>Array with the current audio output devices</returns>
+    private static Device[] GetAllDevicesWindows()
+    {
+        string arguments = "/scomma \"\" /Columns \"Name,Type,Direction,Device Name\"";
+        List<Device> devices = new List<Device>();
         AudioDeviceManagerCommands.ExecuteCommand(arguments, (output) =>
         {
-            devices = output.Select(deviceName => new Device(deviceName)).ToArray();
+            foreach (string deviceString in output)
+            {
+                string[] splitDeviceString = deviceString.Split(',');
+                if (splitDeviceString[1] == "Device" && splitDeviceString[2] == "Render")
+                {
+                    devices.Add(new Device(splitDeviceString[0], splitDeviceString[3]));
+                }
+            }
         });
-        return devices;
+        return devices.ToArray();
+    }
+
+    /// <summary>
+    /// Gets an array with all the available audio output devices in macOS.
+    /// </summary>
+    /// <returns>Array with the current audio output devices</returns>
+    private static Device[] GetAllDevicesMacOS()
+    {
+        string arguments = "-a -t output";
+        List<Device> devices = new List<Device>();
+        AudioDeviceManagerCommands.ExecuteCommand(arguments, (output) =>
+        {
+            foreach (string deviceName in output)
+            {
+                devices.Add(new Device(deviceName));
+            }
+        });
+        return devices.ToArray();
     }
 
     /// <summary>
@@ -163,6 +183,16 @@ public static class AudioDeviceManager
         public Device(string name)
         {
             Name = name;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="name">Name of the device</param>
+        /// <param name="manufactor">Manufactor of the device</param>
+        public Device(string name, string manufactor)
+        {
+            Name = $"{name} ({manufactor})";
         }
     }
 

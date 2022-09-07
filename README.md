@@ -9,11 +9,11 @@ This plugin uses [SoundVolumeView](https://www.nirsoft.net/utils/sound_volume_vi
 ## Usage
 
 ```cs
-// Gets the current default audio output device. (Only works in macOS for now)
-Device currentDevice = GetCurrentDevice();
+// Gets the current default audio output device.
+AudioDeviceManager.Device currentDevice = AudioDeviceManager.GetCurrentDevice();
 
-// Gets an array with all the available audio output devices. (Only works in macOS for now)
-Device[] devices = AudioDeviceManager.GetAllDevices();
+// Gets an array with all the available audio output devices.
+AudioDeviceManager.Device[] devices = AudioDeviceManager.GetAllDevices();
 
 // Asynchronously changes the current default audio output device. DeviceRole defaults to all.
 AudioDeviceManager.SetDefaultDevice("deviceName", AudioDeviceManager.DeviceRole.Console)
