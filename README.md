@@ -4,7 +4,7 @@ Unity plugin to show and switch audio output devices on Windows and macOS.
 
 ## Description
 
-This plugin uses [SoundVolumeView](https://www.nirsoft.net/utils/sound_volume_view.html) in Windows and [switchaudio-osx](https://github.com/deweller/switchaudio-osx) in macOS.
+This plugin uses [SoundVolumeCommandLine](https://www.nirsoft.net/utils/sound_volume_command_line.html) in Windows and [switchaudio-osx](https://github.com/deweller/switchaudio-osx) in macOS.
 
 ## Usage
 

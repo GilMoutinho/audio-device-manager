@@ -165,7 +165,6 @@ public static class AudioDeviceManager
                 Debug.LogError("AudioDeviceManager is only available for Windows and macOS!");
                 return;
         }
-
         AudioDeviceManagerCommands.ExecuteAsyncCommand(arguments);
     }
 

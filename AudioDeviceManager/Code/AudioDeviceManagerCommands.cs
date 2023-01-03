@@ -21,8 +21,8 @@ public static class AudioDeviceManagerCommands
                 case RuntimePlatform.WindowsEditor:
                     // Check if the build is 64bit or 32bit.
                     return IntPtr.Size == 8
-                        ? BasePath + "/win64/SoundVolumeView.exe"
-                        : BasePath + "/win32/SoundVolumeView.exe";
+                        ? BasePath + "/win64/svcl.exe"
+                        : BasePath + "/win32/svcl.exe";
                 case RuntimePlatform.OSXPlayer:
                 case RuntimePlatform.OSXEditor:
                     return BasePath + "/macOS/SwitchAudioSource";
